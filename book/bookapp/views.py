@@ -1,8 +1,9 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.models import  User
-from django.contrib import messages
+from django.contrib import messages  # For displaying feedback messages to the user
 from .models import *
+from datetime import date, timedelta
 import os
 # Create your views here.
 def u_login(req):
@@ -98,11 +99,11 @@ def add_generes(req):
             
             genre = genres.objects.all()
 
-            return render(req, 'admin/add_genres.html', {' genres':  genre})
+            return render(req, 'admin/add_genres.html', {'genres':genre,'cate':cate})
         else:
             cate=Category.objects.all()
             genre= genres.objects.all()
-            return render(req, 'admin/add_genres.html', {' genres': genre,'cate':cate})
+            return render(req, 'admin/add_genres.html', {'genres': genre,'cate':cate})
     else:
           return redirect(u_login)
     
@@ -121,8 +122,8 @@ def add_books(req):
     if 'admin' in req.session:  # Check if admin is logged in
         if req.method == 'POST':
             # Safely retrieve data from the request
-            bname = req.POST.get('title', '').strip()
-            aname = req.POST.get('auther', '').strip()
+            bname = req.POST.get('title', '').strip().upper()
+            aname = req.POST.get('auther', '').strip().upper()
             description = req.POST.get('description', '').strip()
             pdate = req.POST.get('date', None)
             loca = req.POST.get('location', None)
@@ -198,6 +199,14 @@ def view_user(req):
     # Render the products and categories on the template
     return render(req, 'admin/user.html', {'user': user,})
 
+def view_reanted_books(req):
+    data=Borrow.objects.all()
+    
+    return render (req,'admin/view_reanted_book.html',{'borrows':data})
+
+# def returns(req):
+
+
 
 def reg(req):
     if req.method=='POST':
@@ -232,37 +241,79 @@ def user_home(req):
     else:
         return redirect (u_login)
 
-def Books(req):
-    # cate_id = req.GET.get('category', None)
-    # cate = Category.objects.all()  
-    
-    # if cate_id:  # If category filter is applied
-    #    BOOKS = books.objects.filter(category__id=cate_id)  
-    # else:  
-    BOOKS = books.objects.all()[::-1]  
+# def Books(req):
+#     id = req.GET.get('genres', None)
    
+#     gen = genres.objects.all()  
+    
+#     if id:  # If category filter is applied
+#        BOOKS = books.objects.filter(id=gen_id)  
+#     else:
+#         BOOKS = books.objects.all()[::-1]
+#     # 
+#     search_query = req.GET.get('q', '')  # Default to an empty string if no search query is provided
+    
+#     # Filter Borrow records based on the search query
+#     if search_query:
+#         BOOKS = books.objects.filter(
+#              title=search_query,  # You can search by book title
+#         )
+#     else:  
+#           BOOKS = books.objects.all()[::-1]  
+#     if 'user' in req.session:
+#         return render(req,'user/view_book.html', {'book': BOOKS,'search_query': search_query ,'gen': gen})
+#     else:
+#         return redirect (u_login)
+def Books(req):
+    # Get genre filter from query parameters
+    genre_id = req.GET.get('genres', None)
+    
+    # Get search query from query parameters
+    search_query = req.GET.get('q', '')
 
+    # Fetch all genres for the dropdown or filtering options
+    gen = genres.objects.all()
+
+    # Initialize the books queryset
+    BOOKS = books.objects.all()
+
+    # Filter by genre if a genre ID is provided
+    if genre_id:
+        BOOKS = BOOKS.filter(genre_id=genre_id)
+
+    # Filter by search query if provided
+    if search_query:
+        BOOKS = BOOKS.filter(title__icontains=search_query)
+
+    # Reverse the queryset for latest books first
+    BOOKS = BOOKS[::-1]
+
+    # Check if the user is logged in
     if 'user' in req.session:
-        return render(req,'user/view_book.html', { 'book': BOOKS,})
+        return render(req, 'user/view_book.html', {'book': BOOKS, 'search_query': search_query, 'gen': gen})
     else:
-        return redirect (u_login)
+        return redirect(u_login)
+
     
 def viewbook(req,id):
     book=books.objects.get(pk=id)
     if 'user' in req.session:
        return render(req,'user/book.html',{'Book':book})
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages  # Import messages
-from django.contrib.auth.models import User
-from .models import books, Borrow
-from datetime import date, timedelta
-
 def book_reant(req, id):
     # Get the book object
-    book =books.objects.get(books, pk=id)
+    book =books.objects.get(pk=id)
     # Get the user object
-    user =User.objects.get(User, username=req.session['user'])
+    user = User.objects.get (username=req.session.get('user'))
+
+        # Check if the user has already borrowed this book
+    if Borrow.objects.filter(book=book, user=user).exists():
+        # Send a message that the book is already borrowed
+        messages.error(req, f"You have already borrowed '{book.title}'. You cannot borrow it again.")
+        # return render(req, 'user/borrow.html', {'book': book})
+        return redirect(view_borrow)
+
+
     
     # Calculate the return date (10 days from today)
     return_date = date.today() + timedelta(days=10)
@@ -274,17 +325,22 @@ def book_reant(req, id):
         r_date=return_date
     )
     print(book.id)
+    # return render(req,'user/borrow.html',{'book': book})
+    return redirect(view_borrow)
 
-    
-    return redirect('books')
+
+
 def view_borrow(req):
-   data= Borrow.objects.all()
-
+   user=User.objects.get(username=req.session['user'])
+   data=Borrow.objects.filter(user=user)[::-1] 
    return render (req,'user/borrow.html',{'borrows':data})
 
             
    
      
+def about(req):
+    
+       return render(req,'user/about.html')
 def contact(req):
     
        return render(req,'user/contact.html')

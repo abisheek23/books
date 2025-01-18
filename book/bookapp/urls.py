@@ -13,6 +13,7 @@ urlpatterns = [
     path('add_books',views.add_books),
     path('view_books',views.view_book),
     path('view_user',views.view_user),
+    path('view_reanted_books',views.view_reanted_books),
     path('delete_book/<int:id>/',views.delet_book),
 
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path('logout',views.u_logout),
     path('user',views.user_home),
     path('contact',views.contact),
+    path('about',views.about),
     path('books',views.Books,name='books'),
     path('borrow/<int:id>/', views.book_reant, name='book_reant'),
     path('viewbook/<id>',views.viewbook),
