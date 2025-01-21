@@ -117,7 +117,6 @@
       <a href="view_books"><i class="fas fa-book"></i> View Books</a>
       <a href="view_reanted_books"><i class="fas fa-bookmark"></i> Rented Books</a>
       <a href="view_user"><i class="fas fa-users"></i> Users</a>
-      <a href="display_contacts"><i class="fas fa-users"></i> messages</a>
       <a href="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 
@@ -131,44 +130,42 @@
               {% csrf_token %}
               <div class="mb-3">
                 <label for="title">Book Title</label>
-                <input type="text" id="title" name="title" class="form-control" placeholder="Enter book title" required>
+                <input type="text" id="title" name="title" class="form-control" placeholder="Enter book title"value="{{data.title}}" required>
               </div>
               <div class="mb-3">
                 <label for="auther">Author Name</label>
-                <input type="text" id="auther" name="auther" class="form-control" placeholder="Enter author name" required>
+                <input type="text" id="auther" name="auther" class="form-control" placeholder="Enter author name" value="{{data.auther}}" required>
               </div>
               <div class="mb-3">
                 <label for="description">Description</label>
-                <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter book description" required></textarea>
+                <textarea id="description" name="description" class="form-control" rows="4" placeholder="Enter book description" required>{{data.description}}</textarea>
               </div>
               <div class="mb-3">
                 <label for="date">Publication Date</label>
-                <input type="date" id="date" name="date" class="form-control" required>
+                <input type="date" id="date" name="date" class="form-control"value="{{data.publication_date}}">
               </div>
-              <div class="mb-3">
-                <label for="location"> Lnguage</label>
-                <select id="location" name="location" class="form-select" required>
-                  <option value="" disabled selected>Select Lnguage</option>
-                  {% for loc in location %}
-                    <option value="{{ loc.pk }}">{{ loc.location_name }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="generes">Genres</label>
-                <select id="generes" name="generes" class="form-select" required>
-                  <option value="" disabled selected>Select a genre</option>
-                  {% for gen in geners %}
-                    <option value="{{ gen.pk }}">{{ gen.ge_name }},{{ gen.cat_name.name }}</option>
-                  {% endfor %}
-                </select>
-              </div>
+                <!-- language-->
+        
+          <div class="mb-3">
+            <label for="pro_category" class="form-label">language</label>
+            <input class="form-control" id="pro_category" name="category"value="{{data.location.location_name}}" readonly>
+          </div>
+             
+
+                <!-- genre-->
+        
+          <div class="mb-3">
+            <label for="pro_category" class="form-label">genre</label>
+            <input class="form-control" id="pro_category" name="category"value="{{ data.genre.ge_name }},{{ data.genre.cat_name.name }}" readonly>
+          </div>
+             
               <div class="mb-3">
                 <label for="image">Cover Image</label>
-                <input type="file" id="image" name="image" class="form-control" required>
+                <img src="{{data.cover_image.url}}" style="height: 300px; width: 300px;">
+                <input type="file" id="image" name="image" class="form-control" >
               </div>
               <div class="text-center">
-                <button type="submit">Add Book</button>
+                <button type="submit">update</button>
               </div>
               {% if error %}
                 <p class="error-message text-center">{{ error }}</p>

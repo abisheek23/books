@@ -14,7 +14,9 @@ urlpatterns = [
     path('view_books',views.view_book),
     path('view_user',views.view_user),
     path('view_reanted_books',views.view_reanted_books),
-    path('delete_book/<int:id>/',views.delet_book),
+    path('deletebook/<id>',views.delet_book),
+    path('edit_book/<id>',views.edit_book),
+    path("display_contacts/", views.display_contacts, name="display_contacts"),
 
 
     path('register',views.reg),
@@ -26,4 +28,5 @@ urlpatterns = [
     path('borrow/<int:id>/', views.book_reant, name='book_reant'),
     path('viewbook/<id>',views.viewbook),
     path('view_borrows',views.view_borrow),
+    path("submit_contact_form/", views.submit_contact_form, name="submit_contact_form"),
 ]

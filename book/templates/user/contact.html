@@ -48,10 +48,19 @@
             <a class="nav-link" href="user">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Browse Books</a>
+            <a class="nav-link" href="books">Browse Books</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link active" href="#">Contact</a>
+            <a class="nav-link" href="view_borrows">borrowed books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="about">About</a>
+        </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="contact">Contact</a>
+          </li>
+          <li class="nav-item">
+            <a class=" nav-link" href="logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
           </li>
         </ul>
       </div>
@@ -88,6 +97,13 @@
         </form>
       </div>
     </div>
+    {% if messages %}
+  <div>
+    {% for message in messages %}
+      <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+  </div>
+{% endif %}
 
     <!-- Contact Info -->
     <div class="row mt-5">

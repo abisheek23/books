@@ -128,6 +128,7 @@
             <a href="view_books"><i class="bi bi-book"></i> View Books</a>
             <a href="view_reanted_books"><i class="bi bi-bookmark-check"></i> Rented Books</a>
             <a href="view_user"><i class="bi bi-people"></i> Users</a>
+            <a href="display_contacts"><i class="fas fa-users"></i> messages</a>
             <a href="logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </div>
 
@@ -171,15 +172,11 @@
                     <div class="category-card d-flex justify-content-between align-items-center">
                         
                         <h5 class="mb-0 text-truncate">{{ g.ge_name }},{{ g.cat_name.name }}</h5>
-                        <h5 class="mb-0 text-truncate">{{ g.ge_name }}</h5>
+                        </h5>
                     </div>
                 </div>
                 {% endfor %}
-                {% if not genress %}
-                <div class="col-12">
-                    <p class="text-center text-muted">No generes available.</p>
-                </div>
-                {% endif %}
+                
             </div>
         </div>
     </div>

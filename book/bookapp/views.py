@@ -99,7 +99,7 @@ def add_generes(req):
             
             genre = genres.objects.all()
 
-            return render(req, 'admin/add_genres.html', {'genres':genre,'cate':cate})
+            return redirect(add_generes)
         else:
             cate=Category.objects.all()
             genre= genres.objects.all()
@@ -172,6 +172,52 @@ def add_books(req):
             return render(req, 'admin/add_book.html', {'geners': gene, 'location': loc})
     else:
         return redirect(admin_home)  # Redirect to admin home if not logged in
+
+
+def edit_book(req,id):
+    if req.method=='POST':
+        bname = req.POST.get('title', '').strip().upper()
+        aname = req.POST.get('auther', '').strip().upper()
+        description = req.POST.get('description', '').strip()
+        pdate = req.POST.get('date', None)
+        loca = req.POST.get('location', None)
+        genre = req.POST.get('generes', None)
+        file = req.FILES.get('image', None)
+
+        
+        if file:
+            gen = genres.objects.get(pk=genre)
+            books.objects.filter(pk=id).update(title=bname,
+                auther=aname,
+                description=description,
+                publication_date=pdate,
+                location=loca,
+                genre=gen,
+                cover_image=file,)
+            data=books.objects.get(pk=id)
+            data. cover_image=file
+            data.save()
+        else:
+            books.objects.filter(pk=id).update(title=bname,
+                auther=aname,
+                description=description,
+                
+            )
+        return redirect(admin_home)
+        
+
+    else:
+         data=books.objects.get(pk=id)
+         return  render(req,'admin/edit_book.html',{'data':data})
+    
+def delet_book(req,id):
+    data=books.objects.get(pk=id)
+    file=data.cover_image.url
+    file=file.split('/')[-1]
+    os.remove('media/'+file)
+    data.delete()
+    return redirect(admin_home)
+
     
 def view_book(req):
     cate_name = req.GET.get('category', None)
@@ -184,13 +230,7 @@ def view_book(req):
 
     # Render the products and categories on the template
     return render(req, 'admin/view_books.html', {'Books': Book, 'cate': cate})
-def delet_book(req,pk):
-    data=books.objects.get(pk=pk)
-    file=data.img.url
-    file=file.split('/')[-1]
-    os.remove('media/'+file)
-    data.delete()
-    return redirect(admin_home)
+
 
 def view_user(req):
 
@@ -203,6 +243,11 @@ def view_reanted_books(req):
     data=Borrow.objects.all()
     
     return render (req,'admin/view_reanted_book.html',{'borrows':data})
+
+def display_contacts(request):
+    # Fetch all contact form submissions from the database
+    contacts = Contact.objects.all().order_by('-created_at')  # Orders by latest submissions
+    return render(request, "admin/display_contacts.html", {"contacts": contacts})
 
 # def returns(req):
 
@@ -227,7 +272,7 @@ def reg(req):
         return render(req,'user/registration.html')
 
 def user_home(req):
-    search_query = req.GET.get('q', '')  # Default to an empty string if no search query is provided
+    search_query = req.GET.get('q', '').upper()  # Default to an empty string if no search query is provided
     
     # Filter Borrow records based on the search query
     if search_query:
@@ -241,35 +286,14 @@ def user_home(req):
     else:
         return redirect (u_login)
 
-# def Books(req):
-#     id = req.GET.get('genres', None)
-   
-#     gen = genres.objects.all()  
-    
-#     if id:  # If category filter is applied
-#        BOOKS = books.objects.filter(id=gen_id)  
-#     else:
-#         BOOKS = books.objects.all()[::-1]
-#     # 
-#     search_query = req.GET.get('q', '')  # Default to an empty string if no search query is provided
-    
-#     # Filter Borrow records based on the search query
-#     if search_query:
-#         BOOKS = books.objects.filter(
-#              title=search_query,  # You can search by book title
-#         )
-#     else:  
-#           BOOKS = books.objects.all()[::-1]  
-#     if 'user' in req.session:
-#         return render(req,'user/view_book.html', {'book': BOOKS,'search_query': search_query ,'gen': gen})
-#     else:
-#         return redirect (u_login)
+#
+
 def Books(req):
     # Get genre filter from query parameters
     genre_id = req.GET.get('genres', None)
     
     # Get search query from query parameters
-    search_query = req.GET.get('q', '')
+    search_query = req.GET.get('q', '').upper()
 
     # Fetch all genres for the dropdown or filtering options
     gen = genres.objects.all()
@@ -344,4 +368,18 @@ def about(req):
 def contact(req):
     
        return render(req,'user/contact.html')
+
+def submit_contact_form(req):
+    if req.method == "POST":
+        name = req.POST.get("name")
+        email = req.POST.get("email")
+        message = req.POST.get("message")
+
+        # Save the data to the Contact model
+        Contact.objects.create(name=name, email=email, message=message)
+
+        # Provide feedback to the user
+        messages.success(req, "Your message has been sent successfully!")
+        return redirect(contact)  # Replace with the name of your contact page URL
+    return render(req, "user/contact.html")
     

@@ -131,7 +131,9 @@
             <a href="category"><i class="bi bi-folder-plus"></i> Add Category</a>
             <a href="genres"><i class="bi bi-collection"></i> Add Genres</a>
             <a href="view_books" class="active"><i class="bi bi-book"></i> View Books</a>
-            <a href="#"><i class="bi bi-people"></i> Users</a>
+            <a href="view_reanted_books" class=""><i class="bi bi-bookmark-check"></i> Rented Books</a>
+            <a href="view_user"><i class="bi bi-people"></i> Users</a>
+            <a href="display_contacts"><i class="fas fa-users"></i> messages</a>
             <a href="logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
         </div>
 
@@ -146,7 +148,11 @@
                         <div class="card-body">
                             <h5 class="card-title">Title: {{ b.title }}</h5>
                             <h6 class="card-title">Author: {{ b.auther }}</h6>
-                            <div class="d-flex justify-content-between">
+                            
+                                <div class="d-flex justify-content-between">
+                                    <a href="edit_book/{{ b.pk }}" class="btn btn-primary btn-sm">Edit</a>
+                                    <a href="deletebook/{{ b.pk }}" class="btn btn-danger btn-sm">Delete</a>
+                                
                             </div>
                         </div>
                     </div>
