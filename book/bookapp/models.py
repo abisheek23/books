@@ -20,12 +20,19 @@ class books(models.Model):
     location = models.ForeignKey('locations', on_delete=models.CASCADE, null=True, blank=True)
     genre = models.ForeignKey('genres', on_delete=models.CASCADE)
     cover_image = models.FileField()
+    available_copies = models.IntegerField(default=2)
 
-class Borrow(models.Model) :
-    user=models.ForeignKey(User,on_delete=models.CASCADE)
-    book=models.ForeignKey(books,on_delete=models.CASCADE)
-    date=models.DateField(auto_now_add=True)
-    r_date=models.DateField()
+class Borrow(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Approved', 'Approved'),
+        ('Rejected', 'Rejected'),
+    ]
+    book = models.ForeignKey(books, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    request_date = models.DateField(auto_now_add=True)
+    r_date = models.DateField(null=True, blank=True)  # Only set when approved
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
 
 
 class Contact(models.Model):
@@ -34,6 +41,6 @@ class Contact(models.Model):
     message = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-     
+ 
 
 

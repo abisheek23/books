@@ -4,6 +4,7 @@ from django.contrib.auth.models import  User
 from django.contrib import messages  # For displaying feedback messages to the user
 from .models import *
 from datetime import date, timedelta
+
 import os
 # Create your views here.
 def u_login(req):
@@ -239,18 +240,58 @@ def view_user(req):
     # Render the products and categories on the template
     return render(req, 'admin/user.html', {'user': user,})
 
-def view_reanted_books(req):
-    data=Borrow.objects.all()
+# def view_reanted_books(req):
+#     data=Borrow.objects.all()
     
-    return render (req,'admin/view_reanted_book.html',{'borrows':data})
+#     return render (req,'admin/view_reanted_book.html',{'borrows':data})
 
 def display_contacts(request):
     # Fetch all contact form submissions from the database
     contacts = Contact.objects.all().order_by('-created_at')  # Orders by latest submissions
     return render(request, "admin/display_contacts.html", {"contacts": contacts})
 
-# def returns(req):
+def book_request(req, id):
+    # Get the book object
+    book = books.objects.get(pk=id)
+    # Get the user object
+    user = User.objects.get(username=req.session.get('user'))
 
+    # Check if the user has already requested or borrowed this book
+    if Borrow.objects.filter(book=book, user=user, status__in=['Pending', 'Approved']).exists():
+        messages.error(req, f"You have already requested or borrowed '{book.title}'.")
+        return redirect(view_borrow)
+
+    # Create a borrow request with a 'Pending' status
+    Borrow.objects.create(book=book, user=user, status='Pending')
+    messages.success(req, f"Your request to borrow '{book.title}' has been sent.")
+    return redirect(view_borrow)
+
+def manage_borrow_requests(req):
+    # Get all pending borrow requests
+    borrow_requests = Borrow.objects.filter(status='Pending')
+    return render(req, 'admin/manage_borrow_requests.html', {'requests': borrow_requests})
+
+def approve_request(req, borrow_id):
+    borrow = Borrow.objects.get(pk=borrow_id)
+    if borrow.book.available_copies > 0:
+        # Approve the request
+        borrow.status = 'Approved'
+        
+        borrow.r_date = date.today() + timedelta(days=30)
+        borrow.book.available_copies -= 1
+        borrow.book.save()
+        borrow.save()
+        messages.success(req, f"Request for '{borrow.book.title}' has been approved.")
+    else:
+        messages.error(req, f"Cannot approve. No copies available for '{borrow.book.title}'.")
+    return redirect(manage_borrow_requests)
+
+def reject_request(req, borrow_id):
+    borrow = Borrow.objects.get(pk=borrow_id)
+    borrow.status = 'Rejected'
+    borrow.save()
+    messages.info(req, f"Request for '{borrow.book.title}' has been rejected.")
+    return redirect(manage_borrow_requests)
 
 
 def reg(req):
@@ -340,7 +381,7 @@ def book_reant(req, id):
 
     
     # Calculate the return date (10 days from today)
-    return_date = date.today() + timedelta(days=10)
+    return_date= date() + timedelta(days=30)
     
     # Create the Borrow record
     Borrow.objects.create(
