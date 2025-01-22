@@ -11,6 +11,38 @@
             background-color: #f8f9fa;
             font-family: 'Arial', sans-serif;
         }
+        .sidebar {
+            min-height: 100vh;
+            background-color: #343a40;
+            color: white;
+            padding: 20px;
+        }
+
+        .sidebar h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #495057;
+            color: #ffffff;
+        }
+
+        .sidebar a.active {
+            background-color: #007bff;
+            color: white;
+        }
 
         .card {
             border-radius: 15px;
@@ -53,6 +85,20 @@
     </style>
 </head>
 <body>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar d-md-block">
+            <h3>Admin Panel</h3>
+            <a href="../add_books"><i class="fas fa-plus-circle"></i> Add Book</a>
+            <a href="../location"><i class="fas fa-map-marker-alt"></i> Add Language</a>
+            <a href="../category"><i class="fas fa-folder-plus"></i> Add Category</a>
+            <a href="../genres"><i class="fas fa-th-large"></i> Add Genres</a>
+            <a href="../view_books"><i class="fas fa-book"></i> View Books</a>
+            <a href="../manage_requests"><i class="fas fa-bookmark"></i> Rented Books</a>
+            <a href="../view_user"><i class="fas fa-users"></i> Users</a>
+            <a href="../display_contacts" class="active"><i class="fas fa-envelope"></i> Messages</a>
+            <a href="../logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
     <div class="container py-5">
         <!-- Add Location Form -->
         <div class="card shadow-lg p-4 mb-5">
@@ -104,5 +150,6 @@
             {% endif %}
         </div>
     </div>
+</div>
 </body>
 </html>

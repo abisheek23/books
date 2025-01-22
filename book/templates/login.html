@@ -17,9 +17,7 @@
     }
 
     form {
-      background: url('{% static "image/book-G.webp" %}') no-repeat center center fixed;
-      background-size: cover;
-      opacity: 1;
+      background-color: #dfe6e9;
       
       padding: 2rem;
     
@@ -32,7 +30,7 @@
     h2 {
       text-align: center;
       margin-bottom: 1.5rem;
-      color:rgb(253, 254, 249);
+      color:rgb(10, 10, 10);
     }
 
     input[type="text"], 
@@ -92,7 +90,7 @@
       {% csrf_token %}
       
       <!-- Name Input -->
-      <label for="name" class="form-label">Name</label>
+      <label for="name" class="form-label">User_Name</label>
       <input type="text" placeholder="Enter your name" name="uname" id="name" required>
 
       <!-- Password Input -->

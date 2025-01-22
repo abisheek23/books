@@ -158,6 +158,12 @@
             <label for="pro_category" class="form-label">genre</label>
             <input class="form-control" id="pro_category" name="category"value="{{ data.genre.ge_name }},{{ data.genre.cat_name.name }}" readonly>
           </div>
+          <!--Available_copies-->
+
+          <div class="mb-3">
+            <label for="stock">Available_copies</label>
+            <input class="form-control" id="available_copies" name="available_copies"value="{{ data.available_copies }} " required />
+          </div>
              
               <div class="mb-3">
                 <label for="image">Cover Image</label>

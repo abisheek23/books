@@ -27,12 +27,18 @@ class Borrow(models.Model):
         ('Pending', 'Pending'),
         ('Approved', 'Approved'),
         ('Rejected', 'Rejected'),
+        ('Returned', 'Returned'),
+        ('Return Requested', 'Return Requested'),
     ]
     book = models.ForeignKey(books, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     request_date = models.DateField(auto_now_add=True)
+    approval_date = models.DateField(null=True, blank=True) 
     r_date = models.DateField(null=True, blank=True)  # Only set when approved
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    return_request_date = models.DateField(null=True, blank=True)  # Date when user requests to return
+    return_approval_date = models.DateField(null=True, blank=True)  # Date when admin approves return
+ 
 
 
 class Contact(models.Model):

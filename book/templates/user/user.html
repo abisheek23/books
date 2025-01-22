@@ -56,7 +56,10 @@
             <a class="nav-link" href="books">Browse Books</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="view_borrows">borrowed books</a>
+            <a class="nav-link" href="view_borrow_req">requst books</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="view_borrow">borrowed books</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="about">About</a>
@@ -102,7 +105,7 @@
       <h2 class="mb-4">Featured Books</h2>
       <div class="row g-4">
           {% for b in BOOKS %}
-          <div class="col-6">
+          <div class="col-lg-4">
             <a href="viewbook/{{b.pk}}" class="text-decoration-none text-dark">
               <div class="card d-flex flex-col align-items-center shadow-sm">
                   <img class="card-img-left rounded-start" src="{{ b.cover_image.url }}" alt="Book Image" style="width: 150px; height: 150px; object-fit: cover;">

@@ -4,6 +4,9 @@ from django.contrib.auth.models import  User
 from django.contrib import messages  # For displaying feedback messages to the user
 from .models import *
 from datetime import date, timedelta
+from django.db.models import Q
+
+
 
 import os
 # Create your views here.
@@ -129,10 +132,11 @@ def add_books(req):
             pdate = req.POST.get('date', None)
             loca = req.POST.get('location', None)
             genre = req.POST.get('generes', None)
+            copies = req.POST.get('available_copies')
             file = req.FILES.get('image', None)
 
             # Validate required fields
-            if not all([bname, aname, description, pdate, loca, genre, file]):
+            if not all([bname, aname, description, pdate, loca, genre,copies, file]):
                 gene = genres.objects.all()
                 loc = locations.objects.all()
                 return render(req, 'admin/add_book.html', {
@@ -162,6 +166,7 @@ def add_books(req):
                 publication_date=pdate,
                 location=loca,
                 genre=gen,
+                available_copies=copies,
                 cover_image=file,
             )
             return redirect(admin_home)  # Redirect to admin home after saving
@@ -183,6 +188,7 @@ def edit_book(req,id):
         pdate = req.POST.get('date', None)
         loca = req.POST.get('location', None)
         genre = req.POST.get('generes', None)
+        copies = req.POST.get('available_copies')
         file = req.FILES.get('image', None)
 
         
@@ -194,6 +200,7 @@ def edit_book(req,id):
                 publication_date=pdate,
                 location=loca,
                 genre=gen,
+                available_copies=copies,
                 cover_image=file,)
             data=books.objects.get(pk=id)
             data. cover_image=file
@@ -253,11 +260,12 @@ def display_contacts(request):
 def book_request(req, id):
     # Get the book object
     book = books.objects.get(pk=id)
+    
     # Get the user object
     user = User.objects.get(username=req.session.get('user'))
 
-    # Check if the user has already requested or borrowed this book
-    if Borrow.objects.filter(book=book, user=user, status__in=['Pending', 'Approved']).exists():
+    # Check if the user has already requested or borrowed this book (any status)
+    if Borrow.objects.filter(book=book, user=user).exists():
         messages.error(req, f"You have already requested or borrowed '{book.title}'.")
         return redirect(view_borrow)
 
@@ -266,9 +274,11 @@ def book_request(req, id):
     messages.success(req, f"Your request to borrow '{book.title}' has been sent.")
     return redirect(view_borrow)
 
+
 def manage_borrow_requests(req):
     # Get all pending borrow requests
     borrow_requests = Borrow.objects.filter(status='Pending')
+   
     return render(req, 'admin/manage_borrow_requests.html', {'requests': borrow_requests})
 
 def approve_request(req, borrow_id):
@@ -276,8 +286,8 @@ def approve_request(req, borrow_id):
     if borrow.book.available_copies > 0:
         # Approve the request
         borrow.status = 'Approved'
-        
-        borrow.r_date = date.today() + timedelta(days=30)
+        borrow.approval_date = date.today()  
+        borrow.r_date=borrow.approval_date + timedelta(days=30)
         borrow.book.available_copies -= 1
         borrow.book.save()
         borrow.save()
@@ -286,13 +296,56 @@ def approve_request(req, borrow_id):
         messages.error(req, f"Cannot approve. No copies available for '{borrow.book.title}'.")
     return redirect(manage_borrow_requests)
 
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Borrow
+
 def reject_request(req, borrow_id):
-    borrow = Borrow.objects.get(pk=borrow_id)
+    # Get the borrow record
+    borrow = get_object_or_404(Borrow, pk=borrow_id)
+    # Default rejection without reason (GET request)
     borrow.status = 'Rejected'
     borrow.save()
     messages.info(req, f"Request for '{borrow.book.title}' has been rejected.")
     return redirect(manage_borrow_requests)
 
+def delete_all_rejected(req):
+    # Filter and delete all records with 'Rejected' status
+    rejected_requests = Borrow.objects.filter(status='Rejected')
+    count = rejected_requests.count()
+    rejected_requests.delete()
+    messages.success(req, f"Successfully deleted {count} rejected requests.")
+    return redirect(manage_borrow_requests)
+
+def view_rejucted(req):
+    # Get all pending borrow requests
+    data= Borrow.objects.filter(status='Rejected')
+    return render(req, 'admin/rejected.html', {'reject': data})
+def view_rented_books(req):
+    # Get all pending borrow requests
+    borrow= Borrow.objects.filter(status='Approved')
+    return render(req, 'admin/view_rented_books.html', {'rented': borrow})
+
+def manage_returns(req):
+    # Fetch all return requests
+    return_requests = Borrow.objects.filter(status='Return Requested')
+    return render(req, 'admin/manage_returns.html', {'return_requests': return_requests})
+
+def approve_return(req, borrow_id):
+    borrow = get_object_or_404(Borrow, pk=borrow_id)
+
+    # Ensure the book is in the 'Return Requested' state
+    if borrow.status != 'Return Requested':
+        messages.error(req, "Invalid action. The return request is not in the correct state.")
+        return redirect('manage_returns')
+
+    # Approve the return
+    borrow.status = 'Returned'
+    borrow.return_approval_date = date.today()
+    borrow.save()
+
+    messages.success(req, f"Return request for '{borrow.book.title}' has been approved.")
+    return redirect('manage_returns')
 
 def reg(req):
     if req.method=='POST':
@@ -372,36 +425,61 @@ def book_reant(req, id):
     user = User.objects.get (username=req.session.get('user'))
 
         # Check if the user has already borrowed this book
-    if Borrow.objects.filter(book=book, user=user).exists():
+    if Borrow.objects.filter(book=book, user=user,status='pending').exists():
         # Send a message that the book is already borrowed
         messages.error(req, f"You have already borrowed '{book.title}'. You cannot borrow it again.")
-        # return render(req, 'user/borrow.html', {'book': book})
-        return redirect(view_borrow)
-
-
     
-    # Calculate the return date (10 days from today)
-    return_date= date() + timedelta(days=30)
+ 
+    req_date = date.today()
     
     # Create the Borrow record
     Borrow.objects.create(
         book=book,
         user=user,
-        r_date=return_date
+        request_date=req_date
     )
-    print(book.id)
     # return render(req,'user/borrow.html',{'book': book})
     return redirect(view_borrow)
 
 
 
-def view_borrow(req):
+
+
+def view_borrow_req(req):
    user=User.objects.get(username=req.session['user'])
-   data=Borrow.objects.filter(user=user)[::-1] 
-   return render (req,'user/borrow.html',{'borrows':data})
+    # Get all pending borrow requests
+   borrow_requests = Borrow.objects.filter(user=user).filter(Q(status='Pending') | Q(status='Rejected'))
+
+   return render(req, 'user/requests.html', {'requests': borrow_requests})
 
             
-   
+def view_borrow(req):
+   user=User.objects.get(username=req.session['user'])
+    # Get all pending borrow requests
+   borrowd = Borrow.objects.filter(user=user,status='Approved')
+   return render(req, 'user/borrowed.html', {'borrow':borrowd})  
+
+def request_return(req, borrow_id):
+    user = User.objects.get(username=req.session['user'])
+    # Use get() instead of filter() to retrieve a single object
+    try:
+        borrow = Borrow.objects.get(pk=borrow_id, user=user)
+
+        # Ensure the book is already borrowed and not already returned
+        if borrow.status != 'Approved':
+            messages.error(req, "You cannot request a return for this book.")
+            return redirect('view_borrow')
+
+        # Update borrow status to 'Return Requested'
+        borrow.status = 'Return Requested'
+        borrow.return_request_date = date.today()
+        borrow.save()
+
+        messages.success(req, f"Return request for '{borrow.book.title}' has been sent.")
+    except Borrow.DoesNotExist:
+        messages.error(req, "Borrow record not found.")
+    
+    return redirect('view_borrow')  # Note: Changed to use string name instead of function reference
      
 def about(req):
     

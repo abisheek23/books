@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Book</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for borrow in borrowed_books %}
+            <tr>
+                <td>{{ borrow.book.title }}</td>
+                <td>{{ borrow.status }}</td>
+                <td>
+                    {% if borrow.status == 'Approved' %}
+                    <a href="{% url 'request_return' borrow.id %}" class="btn btn-primary btn-sm">Request Return</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+</body>
+</html>

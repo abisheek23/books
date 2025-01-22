@@ -19,9 +19,17 @@ urlpatterns = [
     path("display_contacts/", views.display_contacts, name="display_contacts"),
     path('book_request/<int:id>/', views.book_request, name='book_request'),
     path('manage_requests/', views.manage_borrow_requests, name='manage_borrow_requests'),
+    path('rented/', views.view_rented_books, name='rented'),
+    path('reject/', views.view_rejucted, name='reject'),
     path('approve_request/<int:borrow_id>/', views.approve_request, name='approve_request'),
     path('reject_request/<int:borrow_id>/', views.reject_request, name='reject_request'),
+    path('view_borrow_req/', views.view_borrow_req, name='view_borrow_req'),
     path('view_borrow/', views.view_borrow, name='view_borrow'),
+    path('delete-all-rejected/', views.delete_all_rejected, name='delete_all_rejected'),
+    path('request_return/<int:borrow_id>/', views.request_return, name='request_return'),
+    path('manage_returns/', views.manage_returns, name='manage_returns'),
+    path('approve_return/<int:borrow_id>/', views.approve_return, name='approve_return'),
+
 
 
     path('register',views.reg),
