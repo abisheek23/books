@@ -1,4 +1,4 @@
-{% comment %} #single book  {% endcomment %}
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -88,30 +88,16 @@
                     <tr>
                         <td>{{ b.book.title }}</td>
                         
-                        <td>{{ b.approval_date|default:"N/A" }}</td>
-                        <td>{{ b.r_date|default:"N/A" }}</td>
-                        <td>
-                          <a href="{% url 'request_extension' b.id %}" class="btn btn-primary btn-sm">Request Return-date extent </a>
-                          
-                      </td>
-                        <td>
-                          <a href="{% url 'request_return' b.id %}" class="btn btn-primary btn-sm">Request Return</a>
-                          
-                      </td>
+                        <td>{{ b.approval_date }}</td>
+                        <td>{{ b.return_approval_date}}</td>
+                        
+                        
                     </tr>
                 {% endfor %}
                     
                 </tbody>
             </table>
-            <div class="messages">
-              {% if messages %}
-                  {% for message in messages %}
-                      <div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
-                          {{ message }}
-                          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                      </div>
-                  {% endfor %}
-              {% endif %}
+            
           </div>
         </div>
     </div>

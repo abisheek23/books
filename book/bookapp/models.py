@@ -38,6 +38,12 @@ class Borrow(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     return_request_date = models.DateField(null=True, blank=True)  # Date when user requests to return
     return_approval_date = models.DateField(null=True, blank=True)  # Date when admin approves return
+    extension_requested_date = models.DateField(null=True, blank=True)
+    new_return_date = models.DateField(null=True, blank=True)
+    extension_status = models.CharField(
+        max_length=20, 
+        choices=[('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')],
+        default='Pending')
  
 
 

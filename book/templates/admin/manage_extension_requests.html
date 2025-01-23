@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Return Requests</title>
+    <title>Manage Extension Requests</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -33,7 +33,6 @@
             position: fixed;
             overflow-y: auto;
             z-index: 1000;
-            transition: 0.3s width;
         }
 
         .sidebar h3 {
@@ -68,7 +67,11 @@
             margin-left: 250px;
             padding: 30px;
             width: calc(100% - 250px);
-            transition: 0.3s;
+        }
+
+        .main-content h3 {
+            margin-bottom: 20px;
+            color: var(--primary-bg);
         }
 
         .table-container {
@@ -78,41 +81,46 @@
             overflow: hidden;
         }
 
-        .table {
+        table {
             width: 100%;
-            margin-bottom: 0;
+            border-collapse: collapse;
         }
 
-        .table thead {
+        table thead {
             background-color: var(--secondary-bg);
             color: white;
         }
 
-        .table th, .table td {
+        table th, table td {
             padding: 15px;
-            vertical-align: middle;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
         }
 
-        .table tbody tr:hover {
+        table tbody tr:hover {
             background-color: rgba(52,152,219,0.05);
         }
 
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 16px;
-            border-radius: 5px;
+        .action-links a {
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            margin: 0 5px;
             transition: 0.3s;
         }
 
-        .btn-success {
+        .action-links a:first-child {
             background-color: #2ecc71;
             color: white;
         }
 
-        .btn-success:hover {
-            background-color: #27ae60;
+        .action-links a:last-child {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .action-links a:hover {
+            opacity: 0.8;
         }
 
         @media (max-width: 768px) {
@@ -161,24 +169,28 @@
     </div>
 
     <div class="main-content">
+        <h3>Manage Extension Requests</h3>
         <div class="table-container">
-            <table class="table">
+            <table>
                 <thead>
                     <tr>
                         <th>User</th>
                         <th>Book</th>
-                        <th>Return Request Date</th>
-                        <th>Action</th>
+                        <th>Current Return Date</th>
+                        <th>Requested New Date</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for request in return_requests %}
+                    {% for request in requests %}
                     <tr>
                         <td>{{ request.user.username }}</td>
                         <td>{{ request.book.title }}</td>
-                        <td>{{ request.return_request_date }}</td>
-                        <td>
-                            <a href="{% url 'approve_return' request.id %}" class="btn btn-success">Approve</a>
+                        <td>{{ request.r_date }}</td>
+                        <td>{{ request.new_return_date }}</td>
+                        <td class="action-links">
+                            <a href="{% url 'approve_extension' request.id %}">Approve</a>
+                            <a href="{% url 'reject_extension' request.id %}">Reject</a>
                         </td>
                     </tr>
                     {% endfor %}

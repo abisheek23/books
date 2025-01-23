@@ -296,13 +296,11 @@ def approve_request(req, borrow_id):
         messages.error(req, f"Cannot approve. No copies available for '{borrow.book.title}'.")
     return redirect(manage_borrow_requests)
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from .models import Borrow
+
 
 def reject_request(req, borrow_id):
     # Get the borrow record
-    borrow = get_object_or_404(Borrow, pk=borrow_id)
+    borrow = Borrow.objects.get(pk=borrow_id)
     # Default rejection without reason (GET request)
     borrow.status = 'Rejected'
     borrow.save()
@@ -332,7 +330,7 @@ def manage_returns(req):
     return render(req, 'admin/manage_returns.html', {'return_requests': return_requests})
 
 def approve_return(req, borrow_id):
-    borrow = get_object_or_404(Borrow, pk=borrow_id)
+    borrow = Borrow.objects.get(pk=borrow_id)
 
     # Ensure the book is in the 'Return Requested' state
     if borrow.status != 'Return Requested':
@@ -342,11 +340,59 @@ def approve_return(req, borrow_id):
     # Approve the return
     borrow.status = 'Returned'
     borrow.return_approval_date = date.today()
+
+    book = borrow.book
+    book.available_copies += 1
+    book.save()
     borrow.save()
 
     messages.success(req, f"Return request for '{borrow.book.title}' has been approved.")
     return redirect('manage_returns')
 
+
+def manage_extension_requests(req):
+    # Fetch all pending extension requests
+    extension_requests = Borrow.objects.filter(extension_status='Pending')
+    return render(req, 'admin/manage_extension_requests.html', {'requests': extension_requests})
+
+
+def approve_extension(req, borrow_id):
+    borrow = Borrow.objects.get(pk=borrow_id)
+
+    if borrow.extension_status != 'Pending':
+        messages.error(req, "This extension request has already been processed.")
+        return redirect('manage_extension_requests')
+
+    # Approve the extension
+    borrow.r_date = borrow.new_return_date  # Update the return date
+    borrow.extension_status = 'Approved'
+    borrow.save()
+
+    messages.success(req, f"Extension for '{borrow.book.title}' has been approved.")
+    return redirect('manage_extension_requests')
+
+
+def reject_extension(req, borrow_id):
+    borrow = Borrow.objects.get(pk=borrow_id)
+
+    if borrow.extension_status != 'Pending':
+        messages.error(req, "This extension request has already been processed.")
+        return redirect('manage_extension_requests')
+
+    # Reject the extension
+    borrow.extension_status = 'Rejected'
+    borrow.save()
+
+    messages.info(req, f"Extension request for '{borrow.book.title}' has been rejected.")
+    return redirect('manage_extension_requests')
+
+
+def returned_book(req):
+    
+    borrow = Borrow.objects.filter(status='Returned')
+    return render(req, 'admin/returned_books.html', {'borrow': borrow})
+
+#user
 def reg(req):
     if req.method=='POST':
         uname=req.POST['uname']
@@ -502,3 +548,46 @@ def submit_contact_form(req):
         return redirect(contact)  # Replace with the name of your contact page URL
     return render(req, "user/contact.html")
     
+def request_extension(req, borrow_id):
+    user = User.objects.get(username=req.session['user'])
+    borrow = Borrow.objects.get(pk=borrow_id, user=user)
+
+    # Check if the borrow status is valid for an extension request
+    if borrow.status != 'Approved':
+        messages.error(req, "You cannot request an extension for this book.")
+        return redirect('view_borrow')
+
+    # Check if the user has already requested an extension
+    if borrow.extension_status == 'Pending':
+        messages.warning(req, "You have already requested an extension for this book.")
+        return redirect('view_borrow')
+
+    if req.method == 'POST':
+        # Fetch the new return date from the form
+        new_date = req.POST.get('new_return_date')
+        if not new_date:
+            messages.error(req, "Please provide a valid new return date.")
+            return redirect('view_borrow')
+
+        new_return_date = date.fromisoformat(new_date)
+
+        # Ensure the requested date is valid
+        if new_return_date <= borrow.r_date:
+            messages.error(req, "The new return date must be after the current return date.")
+            return redirect('view_borrow')
+
+        # Update the borrow record
+        borrow.extension_requested_date = date.today()
+        borrow.new_return_date = new_return_date
+        borrow.extension_status = 'Pending'
+        borrow.save()
+
+        messages.success(req, f"Extension request submitted for '{borrow.book.title}'.")
+        return redirect('view_borrow')
+
+    return render(req, 'user/request_extension.html', {'borrow': borrow})
+
+def borrow_history(req):
+    user = User.objects.get(username=req.session['user'])
+    borrow = Borrow.objects.filter(status='Returned', user=user)
+    return render(req, 'user/borrow_history.html', {'borrow': borrow})

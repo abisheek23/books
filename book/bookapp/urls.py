@@ -29,6 +29,11 @@ urlpatterns = [
     path('request_return/<int:borrow_id>/', views.request_return, name='request_return'),
     path('manage_returns/', views.manage_returns, name='manage_returns'),
     path('approve_return/<int:borrow_id>/', views.approve_return, name='approve_return'),
+    path('request-extension/<int:borrow_id>/', views.request_extension, name='request_extension'),
+    path('manage-extension-requests/', views.manage_extension_requests, name='manage_extension_requests'),
+    path('approve-extension/<int:borrow_id>/', views.approve_extension, name='approve_extension'),
+    path('reject-extension/<int:borrow_id>/', views.reject_extension, name='reject_extension'),
+    path('view_rented_history/', views.returned_book, name='view_rented_history'),
 
 
 
@@ -41,4 +46,5 @@ urlpatterns = [
     path('borrow/<int:id>/', views.book_reant, name='book_reant'),
     path('viewbook/<id>',views.viewbook),
     path("submit_contact_form/", views.submit_contact_form, name="submit_contact_form"),
+    path('view_borrow_history/', views.borrow_history, name='view_borrow_history'),
 ]
